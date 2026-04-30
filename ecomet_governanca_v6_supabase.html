@@ -1,0 +1,1774 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>Ecomet — Governança Corporativa</title>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0;}
+:root{
+  --bg:#fff;--bg2:#f5f5f3;--bg3:#efefec;
+  --info-bg:#e6f1fb;--ok-bg:#eaf3de;--warn-bg:#faeeda;--err-bg:#fcebeb;
+  --txt:#1a1a18;--txt2:#5f5e5a;--txt3:#9c9b97;
+  --info:#185fa5;--ok:#3b6d11;--warn:#854f0b;--err:#a32d2d;
+  --purple:#534ab7;--purple-bg:#eeedfe;
+  --border:rgba(0,0,0,0.11);--border2:rgba(0,0,0,0.2);
+  --r:8px;--rl:12px;
+  --font:-apple-system,BlinkMacSystemFont,'Segoe UI',system-ui,sans-serif;
+}
+body{font-family:var(--font);background:var(--bg3);color:var(--txt);font-size:14px;line-height:1.5;}
+.app{display:flex;height:100vh;overflow:hidden;}
+
+/* SIDEBAR */
+.sidebar{width:220px;background:var(--bg);border-right:0.5px solid var(--border);display:flex;flex-direction:column;flex-shrink:0;}
+.logo{padding:18px 16px 14px;border-bottom:0.5px solid var(--border);}
+.logo-row{display:flex;align-items:center;gap:8px;}
+.logo-icon{width:30px;height:30px;background:var(--txt);border-radius:7px;display:flex;align-items:center;justify-content:center;}
+.logo-icon svg{width:16px;height:16px;fill:none;stroke:#fff;stroke-width:1.8;}
+.logo-name{font-size:14px;font-weight:700;color:var(--txt);}
+.logo-sub{font-size:10px;color:var(--txt2);margin-top:2px;padding-left:38px;}
+.nav{padding:10px 8px;flex:1;overflow-y:auto;}
+.nav-sec{font-size:9px;font-weight:700;color:var(--txt3);text-transform:uppercase;letter-spacing:0.9px;padding:8px 10px 3px;}
+.nav-item{display:flex;align-items:center;gap:9px;padding:7px 10px;border-radius:var(--r);cursor:pointer;font-size:12px;color:var(--txt2);margin-bottom:1px;transition:all .12s;}
+.nav-item:hover{background:var(--bg2);color:var(--txt);}
+.nav-item.active{background:var(--info-bg);color:var(--info);font-weight:600;}
+.nav-item svg{width:14px;height:14px;flex-shrink:0;}
+.sb-footer{padding:10px 14px;border-top:0.5px solid var(--border);font-size:10px;color:var(--txt3);}
+
+/* MAIN */
+.main{flex:1;display:flex;flex-direction:column;overflow:hidden;}
+.topbar{background:var(--bg);border-bottom:0.5px solid var(--border);padding:12px 22px;display:flex;align-items:center;justify-content:space-between;flex-shrink:0;}
+.page-title{font-size:14px;font-weight:700;color:var(--txt);}
+.topbar-r{display:flex;gap:8px;align-items:center;}
+.content{flex:1;overflow-y:auto;padding:18px 22px;}
+
+/* BUTTONS */
+.btn{padding:6px 13px;border-radius:var(--r);font-size:12px;cursor:pointer;border:0.5px solid var(--border2);background:var(--bg);color:var(--txt);font-family:var(--font);transition:all .12s;}
+.btn:hover{background:var(--bg2);}
+.btn-p{background:var(--txt);color:#fff;border-color:transparent;font-weight:600;}
+.btn-p:hover{opacity:.85;background:var(--txt);}
+.btn-sm{padding:3px 9px;font-size:11px;}
+.btn-ok{background:var(--ok-bg);color:var(--ok);border-color:transparent;}
+.btn-err{background:var(--err-bg);color:var(--err);border-color:transparent;}
+
+/* CARDS */
+.card{background:var(--bg);border:0.5px solid var(--border);border-radius:var(--rl);padding:16px 18px;margin-bottom:14px;}
+.ch{display:flex;align-items:center;justify-content:space-between;margin-bottom:12px;}
+.ct{font-size:12px;font-weight:700;color:var(--txt);}
+
+/* METRICS */
+.metrics{display:grid;grid-template-columns:repeat(5,1fr);gap:10px;margin-bottom:16px;}
+.metric{background:var(--bg2);border-radius:var(--r);padding:12px 14px;}
+.ml{font-size:9px;color:var(--txt2);text-transform:uppercase;letter-spacing:.6px;font-weight:700;}
+.mv{font-size:22px;font-weight:700;color:var(--txt);margin-top:3px;line-height:1;}
+.ms{font-size:10px;margin-top:4px;}
+
+/* BADGES */
+.badge{display:inline-flex;align-items:center;padding:2px 8px;border-radius:20px;font-size:10px;font-weight:600;}
+.bg-ok{background:var(--ok-bg);color:var(--ok);}
+.bg-warn{background:var(--warn-bg);color:var(--warn);}
+.bg-err{background:var(--err-bg);color:var(--err);}
+.bg-info{background:var(--info-bg);color:var(--info);}
+.bg-gray{background:var(--bg2);color:var(--txt2);}
+.bg-pend{background:#f0eeff;color:var(--purple);}
+
+/* TABLES */
+.tbl{width:100%;border-collapse:collapse;font-size:11px;}
+.tbl th{text-align:left;font-size:9px;font-weight:700;color:var(--txt2);text-transform:uppercase;letter-spacing:.5px;padding:0 10px 7px 0;border-bottom:0.5px solid var(--border);}
+.tbl td{padding:8px 10px 8px 0;border-bottom:0.5px solid var(--border);color:var(--txt);vertical-align:middle;}
+.tbl tr:last-child td{border-bottom:none;}
+.tbl tr:hover td{background:var(--bg2);}
+
+/* AVATARS */
+.av{width:24px;height:24px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:8px;font-weight:700;flex-shrink:0;}
+.av-b{background:var(--info-bg);color:var(--info);}
+.av-g{background:var(--ok-bg);color:var(--ok);}
+.av-y{background:var(--warn-bg);color:var(--warn);}
+.av-p{background:var(--purple-bg);color:var(--purple);}
+.av-x{background:var(--bg2);color:var(--txt2);}
+
+/* PAGES */
+.page{display:none;}
+.page.active{display:block;}
+
+/* GRID */
+.g2{display:grid;grid-template-columns:1fr 1fr;gap:14px;}
+.g3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:14px;}
+
+/* TAGS */
+.tag{display:inline-flex;padding:2px 7px;border-radius:10px;font-size:9px;background:var(--bg2);color:var(--txt2);margin-right:3px;font-weight:600;}
+
+/* PROGRESS */
+.pbar{height:4px;background:var(--bg2);border-radius:2px;margin-top:4px;overflow:hidden;}
+.pfill{height:4px;border-radius:2px;}
+
+/* NOTIFY */
+.notify{background:var(--ok-bg);border:0.5px solid rgba(63,109,17,.2);border-radius:var(--r);padding:9px 13px;font-size:12px;color:var(--ok);margin-bottom:14px;display:none;font-weight:600;}
+
+/* MODAL */
+.mbk{display:none;position:fixed;inset:0;background:rgba(0,0,0,.45);z-index:1000;align-items:center;justify-content:center;}
+.mbk.open{display:flex;}
+.modal{background:var(--bg);border-radius:var(--rl);padding:22px;width:560px;max-height:88vh;overflow-y:auto;border:0.5px solid var(--border2);box-shadow:0 20px 60px rgba(0,0,0,.18);}
+.modal-lg{width:700px;}
+.mtitle{font-size:14px;font-weight:700;margin-bottom:16px;color:var(--txt);}
+.fg{margin-bottom:12px;}
+.fl{font-size:10px;color:var(--txt2);margin-bottom:4px;display:block;font-weight:700;text-transform:uppercase;letter-spacing:.4px;}
+.fi,.fs,.fta{width:100%;padding:7px 9px;border-radius:var(--r);border:0.5px solid var(--border2);background:var(--bg);color:var(--txt);font-size:12px;font-family:var(--font);outline:none;transition:border-color .12s;}
+.fi:focus,.fs:focus,.fta:focus{border-color:var(--info);}
+.fta{resize:vertical;}
+.mact{display:flex;gap:8px;justify-content:flex-end;margin-top:18px;padding-top:14px;border-top:0.5px solid var(--border);}
+.fg-row{display:grid;grid-template-columns:1fr 1fr;gap:10px;}
+
+/* GANTT */
+.gantt-row{display:flex;align-items:center;gap:8px;margin-bottom:6px;}
+.gl{width:130px;font-size:10px;color:var(--txt2);flex-shrink:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
+.gtrack{flex:1;background:var(--bg2);border-radius:2px;height:12px;position:relative;overflow:hidden;}
+.gbar{height:12px;border-radius:2px;position:absolute;}
+.gdate{font-size:9px;color:var(--txt2);width:44px;text-align:right;flex-shrink:0;}
+
+/* CHART */
+.ch-wrap{position:relative;height:190px;}
+
+/* STATUS colors */
+.s-pend{background:#f0eeff;color:var(--purple);}
+.s-and{background:var(--warn-bg);color:var(--warn);}
+.s-ok{background:var(--ok-bg);color:var(--ok);}
+.s-att{background:var(--err-bg);color:var(--err);}
+
+/* UPLOAD AREA */
+.uparea{border:1.5px dashed var(--border2);border-radius:var(--r);padding:20px;text-align:center;cursor:pointer;transition:background .15s;background:var(--bg2);}
+.uparea:hover{background:var(--info-bg);}
+.uparea input{display:none;}
+.uparea svg{width:28px;height:28px;stroke:var(--txt3);margin-bottom:6px;}
+.uparea p{font-size:12px;color:var(--txt2);}
+.uparea small{font-size:10px;color:var(--txt3);}
+
+/* FILE LIST */
+.fitem{display:flex;align-items:center;justify-content:space-between;padding:8px 10px;background:var(--bg2);border-radius:var(--r);margin-bottom:6px;font-size:12px;}
+.fitem-name{display:flex;align-items:center;gap:8px;color:var(--txt);}
+.fitem svg{width:14px;height:14px;stroke:var(--txt2);}
+
+/* CONTACT CARD */
+.ccard{display:flex;align-items:center;justify-content:space-between;padding:10px 12px;background:var(--bg2);border-radius:var(--r);margin-bottom:8px;}
+.ccard-l{display:flex;align-items:center;gap:10px;}
+.ccard-info{font-size:11px;color:var(--txt2);margin-top:1px;}
+
+/* SCROLLBAR */
+::-webkit-scrollbar{width:4px;}
+::-webkit-scrollbar-track{background:transparent;}
+::-webkit-scrollbar-thumb{background:var(--border2);border-radius:2px;}
+
+/* SECTION DIVIDER */
+.sdiv{font-size:10px;font-weight:700;color:var(--txt2);text-transform:uppercase;letter-spacing:.6px;margin:16px 0 8px;border-bottom:0.5px solid var(--border);padding-bottom:6px;}
+
+/* RESP CHIP */
+.rc{display:flex;align-items:center;gap:5px;}
+
+/* INPUT DATE */
+input[type=date].fi{cursor:pointer;}
+
+/* COMM */
+.notif-rule{display:flex;align-items:center;gap:10px;padding:9px 0;border-bottom:0.5px solid var(--border);font-size:11px;}
+.notif-rule:last-child{border-bottom:none;}
+</style>
+</head>
+<body>
+<div class="app">
+
+<!-- SIDEBAR -->
+<div class="sidebar">
+  <div class="logo">
+    <div class="logo-row">
+      <div class="logo-icon"><svg viewBox="0 0 24 24"><path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5" stroke-linecap="round" stroke-linejoin="round"/></svg></div>
+      <span class="logo-name">Ecomet</span>
+    </div>
+    <div class="logo-sub">Governança Corporativa</div>
+  </div>
+  <nav class="nav">
+    <div class="nav-sec">Principal</div>
+    <div class="nav-item active" onclick="nav('dashboard')" id="nav-dashboard">
+      <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5"><rect x="1.5" y="1.5" width="5" height="5" rx="1"/><rect x="9.5" y="1.5" width="5" height="5" rx="1"/><rect x="1.5" y="9.5" width="5" height="5" rx="1"/><rect x="9.5" y="9.5" width="5" height="5" rx="1"/></svg>Dashboard
+    </div>
+    <div class="nav-sec">Reuniões</div>
+    <div class="nav-item" onclick="nav('reunioes')" id="nav-reunioes">
+      <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5"><rect x="1" y="2.5" width="14" height="11" rx="1.5"/><line x1="1" y1="6.5" x2="15" y2="6.5"/><line x1="5" y1="1" x2="5" y2="4" stroke-linecap="round"/><line x1="11" y1="1" x2="11" y2="4" stroke-linecap="round"/></svg>Reuniões
+    </div>
+    <div class="nav-item" onclick="nav('atas')" id="nav-atas">
+      <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5"><rect x="2" y="1" width="12" height="14" rx="1.5"/><line x1="5" y1="5" x2="11" y2="5" stroke-linecap="round"/><line x1="5" y1="8" x2="11" y2="8" stroke-linecap="round"/><line x1="5" y1="11" x2="8.5" y2="11" stroke-linecap="round"/></svg>Pautas e Atas
+    </div>
+    <div class="nav-sec">Acompanhamento</div>
+    <div class="nav-item" onclick="nav('acoes')" id="nav-acoes">
+      <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5"><circle cx="8" cy="8" r="6.5"/><polyline points="5.5,8.5 7,10 10.5,6.5" stroke-linecap="round" stroke-linejoin="round"/></svg>Ações
+    </div>
+    <div class="nav-item" onclick="nav('decisoes')" id="nav-decisoes">
+      <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5"><line x1="2" y1="4" x2="14" y2="4" stroke-linecap="round"/><line x1="2" y1="8" x2="10" y2="8" stroke-linecap="round"/><line x1="2" y1="12" x2="7" y2="12" stroke-linecap="round"/></svg>Decisões
+    </div>
+    <div class="nav-sec">Pessoas</div>
+    <div class="nav-item" onclick="nav('pessoas')" id="nav-pessoas">
+      <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5"><circle cx="6" cy="5" r="2.5"/><path d="M1 13c0-3 2.2-5 5-5s5 2 5 5"/><circle cx="12" cy="6" r="2"/><path d="M15 13c0-2-1.3-3.5-3-3.5"/></svg>Participantes
+    </div>
+    <div class="nav-sec">Comunicação</div>
+    <div class="nav-item" onclick="nav('comunicacao')" id="nav-comunicacao">
+      <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M13 2H3a1 1 0 00-1 1v7a1 1 0 001 1h2v3l3-3h5a1 1 0 001-1V3a1 1 0 00-1-1z"/></svg>Comunicação
+    </div>
+  </nav>
+  <div class="sb-footer">v2.0 · Reunião 17/04/2026</div>
+</div>
+
+<!-- MAIN -->
+<div class="main">
+
+<!-- ══ DASHBOARD ══ -->
+<div class="page active" id="page-dashboard">
+  <div class="topbar">
+    <div class="page-title">Dashboard — 1T2026</div>
+    <div class="topbar-r">
+      <button class="btn" onclick="openM('m-reuniao')">+ Nova Reunião</button>
+      <button class="btn btn-p" onclick="openM('m-acao')">+ Nova Ação</button>
+    </div>
+  </div>
+  <div class="content">
+    <div id="n0" class="notify"></div>
+    <div class="metrics">
+      <div class="metric"><div class="ml">Total</div><div class="mv" id="m-total">31</div><div class="ms" style="color:var(--txt2)">ações geradas</div></div>
+      <div class="metric"><div class="ml">Pendentes</div><div class="mv" style="color:var(--purple)" id="m-pend">0</div><div class="ms" style="color:var(--purple)">aguardando início</div></div>
+      <div class="metric"><div class="ml">Em Andamento</div><div class="mv" style="color:var(--warn)" id="m-and">0</div><div class="ms" style="color:var(--warn)">em execução</div></div>
+      <div class="metric"><div class="ml">Concluídas</div><div class="mv" style="color:var(--ok)" id="m-ok">0</div><div class="ms" style="color:var(--ok)" id="m-ok-pct">0%</div></div>
+      <div class="metric"><div class="ml">Atrasadas</div><div class="mv" style="color:var(--err)" id="m-att">0</div><div class="ms" style="color:var(--err)">vencidas</div></div>
+    </div>
+    <div class="g2">
+      <div class="card"><div class="ch"><div class="ct">Ações por Área</div></div><div class="ch-wrap"><canvas id="chartAreas" role="img" aria-label="Ações por área">Governança:3, Operações:5, Comercial:9, Compras:5, Financeiro:2, Processos:3, Pessoas:4</canvas></div></div>
+      <div class="card"><div class="ch"><div class="ct">Progresso por Responsável</div></div><div id="resp-prog"></div></div>
+    </div>
+    <div class="card">
+      <div class="ch"><div class="ct">Linha do Tempo — Prazos Críticos</div><span class="badge bg-warn">Abril–Maio 2026</span></div>
+      <div id="gantt"></div>
+    </div>
+    <div class="card">
+      <div class="ch"><div class="ct">Ações Prioritárias</div><button class="btn btn-sm" onclick="nav('acoes')">Ver todas →</button></div>
+      <table class="tbl"><thead><tr><th>Ação</th><th>Área</th><th>Responsável</th><th>Prazo</th><th>Status</th></tr></thead><tbody id="prox-acoes"></tbody></table>
+    </div>
+  </div>
+</div>
+
+<!-- ══ REUNIÕES ══ -->
+<div class="page" id="page-reunioes">
+  <div class="topbar"><div class="page-title">Reuniões de Diretoria</div><button class="btn btn-p" onclick="openM('m-reuniao')">+ Nova Reunião</button></div>
+  <div class="content">
+    <div class="card">
+      <div class="ch"><div class="ct">Reunião Realizada — 1T2026</div><span class="badge bg-ok">Realizada</span></div>
+      <div style="padding:10px 0;">
+        <div style="display:flex;justify-content:space-between;align-items:flex-start;gap:12px;">
+          <div>
+            <div style="font-size:13px;font-weight:700;">Reunião de Diretoria Executiva — 1T2026</div>
+            <div style="font-size:11px;color:var(--txt2);margin-top:3px;">17/04/2026 · 9h30–17h30 · Presencial – Sala de Reuniões</div>
+            <div style="font-size:11px;color:var(--txt2);">Convocada por: Ricardo Kalil Abud</div>
+            <div style="margin-top:6px;"><span class="tag">DRE 1T2026</span><span class="tag">Previsto x Realizado</span><span class="tag">Projetos Estratégicos</span><span class="tag">Calendário 2T2026</span></div>
+          </div>
+          <div style="display:flex;gap:6px;flex-shrink:0;">
+            <button class="btn btn-sm" onclick="nav('atas')">Atas</button>
+            <button class="btn btn-sm" onclick="nav('acoes')">Ações</button>
+            <button class="btn btn-sm" onclick="nav('decisoes')">Decisões</button>
+          </div>
+        </div>
+        <div style="margin-top:10px;display:flex;gap:6px;align-items:center;">
+          <div class="av av-p">RA</div><div class="av av-g" style="margin-left:3px">VC</div><div class="av av-y" style="margin-left:3px">RB</div>
+          <span style="font-size:11px;color:var(--txt2);margin-left:4px;">3 diretores · 31 ações · 6 decisões</span>
+        </div>
+      </div>
+    </div>
+    <div class="card">
+      <div class="ch"><div class="ct">Próximas Reuniões — 2T2026</div><span class="badge bg-info">Planejamento</span></div>
+      <div style="padding:10px 0 4px;font-size:12px;color:var(--txt2);">Nenhuma reunião agendada para o 2T2026 ainda.</div>
+      <button class="btn btn-p" style="margin-top:10px;" onclick="openM('m-reuniao')">Agendar Nova Reunião</button>
+    </div>
+  </div>
+</div>
+
+<!-- ══ PAUTAS E ATAS ══ -->
+<div class="page" id="page-atas">
+  <div class="topbar"><div class="page-title">Pautas e Atas</div><button class="btn btn-p" onclick="openM('m-upload')">+ Upload de Documento</button></div>
+  <div class="content">
+    <div id="n-atas" class="notify"></div>
+    <div class="g2">
+      <!-- PAUTAS -->
+      <div class="card">
+        <div class="ch"><div class="ct">Pautas</div><button class="btn btn-sm" onclick="gerarPDF('pauta')">Gerar PDF</button></div>
+        <div class="uparea" onclick="document.getElementById('up-pauta').click()">
+          <input type="file" id="up-pauta" accept=".pdf,.doc,.docx" onchange="uploadArq(this,'pauta')"/>
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
+          <p>Arraste ou clique para enviar</p>
+          <small>PDF, DOC, DOCX</small>
+        </div>
+        <div style="margin-top:12px;" id="lista-pautas">
+          <div class="fitem">
+            <div class="fitem-name"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>Pauta_Reunião_1T2026_17-04-2026.docx</div>
+            <div style="display:flex;gap:6px;">
+              <button class="btn btn-sm" onclick="gerarPDF('pauta')">PDF</button>
+              <button class="btn btn-sm btn-err" onclick="this.closest('.fitem').remove()">×</button>
+            </div>
+          </div>
+        </div>
+        <div class="sdiv" style="margin-top:14px;">Pauta — Reunião 17/04/2026</div>
+        <div style="font-size:11px;color:var(--txt2);line-height:1.8;">
+          <div>· 9h30–11h: DRE 1T2026</div>
+          <div>· 11h–12h30: Previsto x Realizado — Vendas e Produtos</div>
+          <div>· 13h30–15h30: Projetos Estratégicos</div>
+          <div>· 15h30–17h: Calendário 2T2026</div>
+        </div>
+      </div>
+      <!-- ATAS -->
+      <div class="card">
+        <div class="ch"><div class="ct">Atas</div><button class="btn btn-sm" onclick="gerarPDF('ata')">Gerar PDF</button></div>
+        <div class="uparea" onclick="document.getElementById('up-ata').click()">
+          <input type="file" id="up-ata" accept=".pdf,.doc,.docx" onchange="uploadArq(this,'ata')"/>
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
+          <p>Arraste ou clique para enviar</p>
+          <small>PDF, DOC, DOCX</small>
+        </div>
+        <div style="margin-top:12px;" id="lista-atas">
+          <div class="fitem">
+            <div class="fitem-name"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>Ata_Reunião_1T2026_17-04-2026.docx</div>
+            <div style="display:flex;gap:6px;">
+              <button class="btn btn-sm" onclick="gerarPDF('ata')">PDF</button>
+              <button class="btn btn-sm btn-err" onclick="this.closest('.fitem').remove()">×</button>
+            </div>
+          </div>
+        </div>
+        <div class="sdiv" style="margin-top:14px;">Resumo da Ata — Reunião 17/04/2026</div>
+        <div style="font-size:11px;color:var(--txt2);line-height:1.8;">
+          <div>Participantes: Ricardo Abud, Rafael Bernardes, Vinicius Cardoso</div>
+          <div>Responsável: Ricardo Kalil Abud</div>
+          <div>Distribuição: até 19/04/2026</div>
+          <div style="margin-top:6px;">Resultados do 1T2026 deliberados. Premissas 2T2026 aprovadas com foco em liquidez, margem e giro. 31 ações e 6 decisões formalizadas.</div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ══ AÇÕES ══ -->
+<div class="page" id="page-acoes">
+  <div class="topbar">
+    <div class="page-title">Ações e Responsabilidades</div>
+    <div class="topbar-r">
+      <select class="fs" style="width:140px;font-size:11px;" onchange="filtSt(this.value)">
+        <option value="">Todos os status</option>
+        <option value="Pendente">Pendente</option>
+        <option value="Em andamento">Em andamento</option>
+        <option value="Concluída">Concluída</option>
+        <option value="Atrasada">Atrasada</option>
+      </select>
+      <select class="fs" style="width:160px;font-size:11px;" onchange="filtAr(this.value)">
+        <option value="">Todas as áreas</option>
+        <option>Governança e Gestão</option><option>Operações e Produção</option><option>Comercial e Mercado</option>
+        <option>Compras e Suprimentos</option><option>Financeiro e Performance</option><option>Processos e Compliance</option><option>Pessoas e Estrutura</option>
+      </select>
+      <button class="btn btn-p" onclick="openM('m-acao')">+ Nova Ação</button>
+    </div>
+  </div>
+  <div class="content">
+    <div id="n-acoes" class="notify"></div>
+    <div class="card" style="padding:0;overflow:hidden;">
+      <div style="overflow-x:auto;">
+        <table class="tbl" style="min-width:1200px;">
+          <thead>
+            <tr>
+              <th style="padding:11px 10px 9px 18px;min-width:240px;">Ação</th>
+              <th style="min-width:100px;">Área</th>
+              <th style="min-width:130px;">Responsável</th>
+              <th style="min-width:105px;">Dt. Início</th>
+              <th style="min-width:100px;">Prazo</th>
+              <th style="min-width:105px;">Dt. Finalização</th>
+              <th style="min-width:95px;">Status</th>
+              <th style="min-width:180px;">Anotações / Resultado</th>
+              <th style="padding-right:18px;min-width:70px;"></th>
+            </tr>
+          </thead>
+          <tbody id="tb-acoes"></tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ══ DECISÕES ══ -->
+<div class="page" id="page-decisoes">
+  <div class="topbar"><div class="page-title">Decisões da Diretoria</div><span class="badge bg-ok" style="font-size:11px;">6 deliberadas — 17/04/2026</span></div>
+  <div class="content">
+    <div class="card"><div class="ch"><div class="ct">Deliberações — Reunião 1T2026</div></div><div id="lista-dec"></div></div>
+  </div>
+</div>
+
+<!-- ══ PESSOAS ══ -->
+<div class="page" id="page-pessoas">
+  <div class="topbar">
+    <div class="page-title">Participantes e Responsáveis</div>
+    <div class="topbar-r">
+      <select class="fs" style="width:180px;font-size:11px;" onchange="filtPessoas(this.value)">
+        <option value="">Todos os papéis</option>
+        <option value="Aprovação">Aprovação</option>
+        <option value="Comunicação">Comunicação</option>
+        <option value="Execução">Execução</option>
+        <option value="Avaliação">Avaliação</option>
+        <option value="Consultado">Consultado</option>
+        <option value="Informado">Informado</option>
+      </select>
+      <button class="btn btn-p" onclick="abrirCadastroPessoa()">+ Cadastrar Pessoa</button>
+    </div>
+  </div>
+  <div class="content">
+    <div id="n-pessoas" class="notify"></div>
+
+    <!-- LEGENDA DE PAPÉIS -->
+    <div class="card" style="padding:12px 18px;">
+      <div style="display:flex;gap:8px;flex-wrap:wrap;align-items:center;">
+        <span style="font-size:10px;font-weight:700;color:var(--txt2);text-transform:uppercase;letter-spacing:.5px;margin-right:4px;">Papéis:</span>
+        <span class="badge" style="background:#faeeda;color:#854f0b;">Aprovação</span>
+        <span class="badge" style="background:#e6f1fb;color:#185fa5;">Comunicação</span>
+        <span class="badge" style="background:#eaf3de;color:#3b6d11;">Execução</span>
+        <span class="badge" style="background:#eeedfe;color:#534ab7;">Avaliação</span>
+        <span class="badge" style="background:#f5f5f3;color:#5f5e5a;">Consultado</span>
+        <span class="badge" style="background:#fcebeb;color:#a32d2d;">Informado</span>
+        <span style="font-size:10px;color:var(--txt3);margin-left:8px;">Pessoas sem vínculo com reuniões também podem ter ações atribuídas.</span>
+      </div>
+    </div>
+
+    <!-- AGENDA GLOBAL -->
+    <div class="card">
+      <div class="ch">
+        <div class="ct">Cadastro Global — <span id="badge-pessoas-ct">0</span> pessoas</div>
+        <div style="display:flex;gap:6px;">
+          <input class="fi" id="busca-pessoa" placeholder="Buscar..." style="width:160px;font-size:11px;padding:5px 8px;" oninput="renderPessoas()"/>
+        </div>
+      </div>
+      <div id="lista-pessoas"></div>
+    </div>
+
+    <!-- PARTICIPANTES POR REUNIÃO -->
+    <div class="card">
+      <div class="ch">
+        <div class="ct">Participantes — Reunião 17/04/2026</div>
+        <button class="btn btn-sm" onclick="openM('m-vincular')">+ Vincular à Reunião</button>
+      </div>
+      <div id="lista-vinculados"></div>
+    </div>
+  </div>
+</div>
+
+<!-- ══ COMUNICAÇÃO ══ -->
+<div class="page" id="page-comunicacao">
+  <div class="topbar"><div class="page-title">Comunicação e Notificações</div></div>
+  <div class="content">
+    <div class="g2">
+      <div class="card">
+        <div class="ch"><div class="ct">Enviar E-mail</div></div>
+        <div class="fg"><label class="fl">Destinatário</label>
+          <select class="fs" id="em-dest">
+            <option>Rafael Bernardes — rafael@ecomet.com.br</option>
+            <option>Vinicius Cardoso — vinicius@ecomet.com.br</option>
+            <option>Ricardo Kalil Abud — ricardo@ecomet.com.br</option>
+            <option>Simone — simone@ecomet.com.br</option>
+            <option>Todos os diretores</option>
+          </select>
+        </div>
+        <div class="fg"><label class="fl">Assunto</label><input class="fi" id="em-assunto" value="[Ecomet Governança] Lembrete de Ação Pendente"/></div>
+        <div class="fg"><label class="fl">Mensagem</label><textarea class="fta" id="em-msg" rows="5">Olá,
+
+Você possui ação(ões) pendente(s) com prazo se aproximando.
+
+Por favor, atualize o status no sistema.
+
+Atenciosamente,
+Sistema de Governança — Ecomet</textarea></div>
+        <button class="btn btn-p" onclick="envEmail()" style="width:100%;">Enviar E-mail</button>
+      </div>
+      <div class="card">
+        <div class="ch"><div class="ct">Mensagem WhatsApp</div></div>
+        <div class="fg"><label class="fl">Destinatário</label>
+          <select class="fs" id="wa-dest">
+            <option value="5551991110001">Rafael Bernardes — (51) 9 9111-0001</option>
+            <option value="5551991110002">Vinicius Cardoso — (51) 9 9111-0002</option>
+            <option value="5551991110003">Ricardo Kalil Abud — (51) 9 9111-0003</option>
+            <option value="5551991110004">Simone — (51) 9 9111-0004</option>
+          </select>
+        </div>
+        <div class="fg"><label class="fl">Mensagem</label><textarea class="fta" id="wa-msg" rows="7">*Ecomet — Governança Corporativa*
+
+Olá! Você possui ação(ões) pendente(s) com prazo se aproximando.
+
+Por favor, confirme o status ou atualize no sistema.
+
+_Reunião: 17/04/2026 — 1T2026_
+_Contato: Ricardo Abud_</textarea></div>
+        <div style="font-size:10px;color:var(--txt3);margin-bottom:8px;">Abrirá o WhatsApp Web com mensagem pré-preenchida.</div>
+        <button class="btn btn-p" onclick="envWA()" style="width:100%;">Abrir WhatsApp</button>
+      </div>
+    </div>
+    <div class="card">
+      <div class="ch">
+        <div class="ct">Regras de Notificação Automática</div>
+        <div style="display:flex;gap:6px;align-items:center;">
+          <span class="badge bg-info" id="badge-regras">4 regras</span>
+          <button class="btn btn-sm" onclick="abrirNovaRegra()">+ Nova Regra</button>
+        </div>
+      </div>
+      <div id="lista-regras"></div>
+    </div>
+  </div>
+</div>
+
+</div><!-- /main -->
+<!-- MODAL REGRA DE NOTIFICAÇÃO -->
+<div class="mbk" id="m-regra">
+  <div class="modal">
+    <div class="mtitle" id="m-regra-title">Nova Regra de Notificação</div>
+    <input type="hidden" id="regra-id"/>
+    <div class="fg">
+      <label class="fl">Gatilho / Evento *</label>
+      <select class="fs" id="regra-gatilho">
+        <option value="Prazo se aproximando">Prazo se aproximando</option>
+        <option value="Ação atrasada">Ação atrasada</option>
+        <option value="Nova ação criada">Nova ação criada</option>
+        <option value="Ação concluída">Ação concluída</option>
+        <option value="Reunião agendada">Reunião agendada</option>
+        <option value="Reunião cancelada">Reunião cancelada</option>
+        <option value="Personalizado">Personalizado</option>
+      </select>
+    </div>
+    <div class="fg">
+      <label class="fl">Descrição da regra</label>
+      <input class="fi" id="regra-desc" placeholder="Ex: Notifica responsável e copia diretoria..."/>
+    </div>
+    <div class="fg-row">
+      <div class="fg">
+        <label class="fl">Antecedência / Timing</label>
+        <select class="fs" id="regra-timing">
+          <option value="Imediato">Imediato</option>
+          <option value="1 dia antes">1 dia antes</option>
+          <option value="3 dias antes">3 dias antes</option>
+          <option value="7 dias antes">7 dias antes</option>
+          <option value="15 dias antes">15 dias antes</option>
+          <option value="No vencimento">No vencimento</option>
+          <option value="1 dia após vencimento">1 dia após vencimento</option>
+        </select>
+      </div>
+      <div class="fg">
+        <label class="fl">Destinatário</label>
+        <select class="fs" id="regra-dest">
+          <option value="Responsável">Responsável da ação</option>
+          <option value="Responsável + Diretor">Responsável + Ricardo Abud</option>
+          <option value="Todos os diretores">Todos os diretores</option>
+          <option value="Todos os participantes">Todos os participantes</option>
+          <option value="Personalizado">Personalizado</option>
+        </select>
+      </div>
+    </div>
+    <div class="fg">
+      <label class="fl">Canais de comunicação</label>
+      <div style="display:flex;gap:16px;padding:10px;background:var(--bg2);border-radius:var(--r);">
+        <label style="font-size:12px;display:flex;align-items:center;gap:7px;cursor:pointer;">
+          <input type="checkbox" id="regra-email" checked/>
+          <span>📧 E-mail</span>
+        </label>
+        <label style="font-size:12px;display:flex;align-items:center;gap:7px;cursor:pointer;">
+          <input type="checkbox" id="regra-wa" checked/>
+          <span>📱 WhatsApp</span>
+        </label>
+      </div>
+    </div>
+    <div class="fg">
+      <label class="fl">Status da regra</label>
+      <select class="fs" id="regra-ativo">
+        <option value="1">Ativa</option>
+        <option value="0">Inativa</option>
+      </select>
+    </div>
+    <div class="mact">
+      <button class="btn" onclick="closeM('m-regra')">Cancelar</button>
+      <button class="btn btn-p" onclick="salvarRegra()">Salvar Regra</button>
+    </div>
+  </div>
+</div>
+
+</div><!-- /app -->
+
+<!-- ══ MODAIS ══ -->
+
+<!-- NOVA AÇÃO -->
+<div class="mbk" id="m-acao">
+  <div class="modal">
+    <div class="mtitle">Nova Ação</div>
+    <div class="fg"><label class="fl">Descrição *</label><input class="fi" id="na-desc" placeholder="Descreva a ação..."/></div>
+    <div class="fg-row">
+      <div class="fg"><label class="fl">Área *</label>
+        <select class="fs" id="na-area">
+          <option>Governança e Gestão</option><option>Operações e Produção</option><option>Comercial e Mercado</option>
+          <option>Compras e Suprimentos</option><option>Financeiro e Performance</option><option>Processos e Compliance</option><option>Pessoas e Estrutura</option>
+        </select>
+      </div>
+      <div class="fg"><label class="fl">Responsável *</label>
+        <select class="fs" id="na-resp">
+          <option>Ricardo Abud</option><option>Rafael Bernardes</option><option>Vinicius Cardoso</option>
+          <option>Simone / Contabilidade</option><option>Luciano / Vinicius Cardoso</option><option>Vera / Rafael Bernardes</option><option>Paulo / Vinicius Cardoso</option>
+        </select>
+      </div>
+    </div>
+    <div class="fg-row">
+      <div class="fg"><label class="fl">Data de Início</label><input class="fi" type="date" id="na-inicio"/></div>
+      <div class="fg"><label class="fl">Prazo *</label><input class="fi" type="date" id="na-prazo"/></div>
+    </div>
+    <div class="fg"><label class="fl">Reunião de origem</label>
+      <select class="fs"><option>17/04/2026 — Diretoria 1T2026</option><option>A definir — 2T2026</option></select>
+    </div>
+    <div class="mact">
+      <button class="btn" onclick="closeM('m-acao')">Cancelar</button>
+      <button class="btn btn-p" onclick="addAcao()">Salvar e Notificar</button>
+    </div>
+  </div>
+</div>
+
+<!-- NOVA REUNIÃO -->
+<div class="mbk" id="m-reuniao">
+  <div class="modal">
+    <div class="mtitle">Agendar Nova Reunião</div>
+    <div class="fg-row">
+      <div class="fg"><label class="fl">Tipo</label>
+        <select class="fs"><option>Diretoria Executiva</option><option>Conselho</option><option>Comitê Estratégico</option></select>
+      </div>
+      <div class="fg"><label class="fl">Data</label><input class="fi" type="date"/></div>
+    </div>
+    <div class="fg-row">
+      <div class="fg"><label class="fl">Horário início</label><input class="fi" type="time" value="09:30"/></div>
+      <div class="fg"><label class="fl">Horário fim</label><input class="fi" type="time" value="17:30"/></div>
+    </div>
+    <div class="fg"><label class="fl">Local / Formato</label>
+      <select class="fs"><option>Presencial – Sala de Reuniões</option><option>Videoconferência (Meet)</option><option>Híbrido</option></select>
+    </div>
+    <div class="fg"><label class="fl">Participantes</label>
+      <div style="display:flex;flex-direction:column;gap:6px;padding:8px;background:var(--bg2);border-radius:var(--r);" id="chk-participantes">
+        <label style="font-size:11px;display:flex;align-items:center;gap:8px;cursor:pointer;"><input type="checkbox" checked/> Ricardo Kalil Abud — Diretor de Gestão</label>
+        <label style="font-size:11px;display:flex;align-items:center;gap:8px;cursor:pointer;"><input type="checkbox" checked/> Rafael Bernardes — Diretor Comercial</label>
+        <label style="font-size:11px;display:flex;align-items:center;gap:8px;cursor:pointer;"><input type="checkbox" checked/> Vinicius Cardoso — Diretor Industrial</label>
+      </div>
+    </div>
+    <div class="fg"><label class="fl">Pauta / Objetivos</label><textarea class="fta" rows="3" placeholder="Descreva os tópicos principais..."></textarea></div>
+    <div class="mact">
+      <button class="btn" onclick="closeM('m-reuniao')">Cancelar</button>
+      <button class="btn btn-p" onclick="criarReuniao()">Agendar e Convocar</button>
+    </div>
+  </div>
+</div>
+
+<!-- UPLOAD DOCUMENTO -->
+<div class="mbk" id="m-upload">
+  <div class="modal">
+    <div class="mtitle">Upload de Documento</div>
+    <div class="fg"><label class="fl">Tipo de documento</label>
+      <select class="fs" id="up-tipo"><option value="pauta">Pauta</option><option value="ata">Ata</option></select>
+    </div>
+    <div class="fg"><label class="fl">Reunião</label>
+      <select class="fs"><option>17/04/2026 — Diretoria 1T2026</option><option>A definir — 2T2026</option></select>
+    </div>
+    <div class="fg">
+      <label class="fl">Arquivo</label>
+      <div class="uparea" onclick="document.getElementById('up-modal-file').click()">
+        <input type="file" id="up-modal-file" accept=".pdf,.doc,.docx" onchange="uploadModal(this)"/>
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
+        <p id="up-modal-label">Clique para selecionar arquivo</p>
+        <small>PDF, DOC, DOCX — máx. 20 MB</small>
+      </div>
+    </div>
+    <div class="fg"><label class="fl">Descrição (opcional)</label><input class="fi" id="up-desc" placeholder="Ex: Pauta revisada com KPIs..."/></div>
+    <div class="mact">
+      <button class="btn" onclick="closeM('m-upload')">Cancelar</button>
+      <button class="btn btn-p" onclick="salvarUpload()">Salvar Documento</button>
+    </div>
+  </div>
+</div>
+
+<!-- CADASTRAR / EDITAR PESSOA -->
+<div class="mbk" id="m-pessoa">
+  <div class="modal">
+    <div class="mtitle" id="m-pessoa-title">Cadastrar Pessoa</div>
+    <input type="hidden" id="ps-id" value=""/>
+    <div class="fg-row">
+      <div class="fg"><label class="fl">Nome completo *</label><input class="fi" id="ps-nome" placeholder="Nome completo..."/></div>
+      <div class="fg"><label class="fl">Cargo / Função *</label><input class="fi" id="ps-cargo" placeholder="Ex: Diretor Industrial"/></div>
+    </div>
+    <div class="fg-row">
+      <div class="fg"><label class="fl">E-mail *</label><input class="fi" type="email" id="ps-email" placeholder="nome@ecomet.com.br"/></div>
+      <div class="fg"><label class="fl">Telefone / WhatsApp</label><input class="fi" id="ps-tel" placeholder="(51) 9 9999-0000"/></div>
+    </div>
+    <div class="fg-row">
+      <div class="fg"><label class="fl">Área / Departamento</label>
+        <select class="fs" id="ps-area">
+          <option>Diretoria</option><option>Governança e Gestão</option><option>Comercial</option>
+          <option>Industrial / Operações</option><option>Financeiro</option><option>Compras</option>
+          <option>Pessoas e Estrutura</option><option>Externo / Convidado</option>
+        </select>
+      </div>
+      <div class="fg"><label class="fl">Perfil / Nível</label>
+        <select class="fs" id="ps-perfil">
+          <option>Diretor</option><option>Gerente</option><option>Responsável de Área</option>
+          <option>Coordenador</option><option>Colaborador</option><option>Convidado</option><option>Consultor</option>
+        </select>
+      </div>
+    </div>
+    <div class="fg">
+      <label class="fl">Papéis desta pessoa</label>
+      <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:6px;padding:10px;background:var(--bg2);border-radius:var(--r);">
+        <label style="font-size:11px;display:flex;align-items:center;gap:6px;cursor:pointer;"><input type="checkbox" class="ps-papel" value="Aprovação"/> <span style="color:#854f0b;font-weight:600;">Aprovação</span></label>
+        <label style="font-size:11px;display:flex;align-items:center;gap:6px;cursor:pointer;"><input type="checkbox" class="ps-papel" value="Comunicação"/> <span style="color:#185fa5;font-weight:600;">Comunicação</span></label>
+        <label style="font-size:11px;display:flex;align-items:center;gap:6px;cursor:pointer;"><input type="checkbox" class="ps-papel" value="Execução"/> <span style="color:#3b6d11;font-weight:600;">Execução</span></label>
+        <label style="font-size:11px;display:flex;align-items:center;gap:6px;cursor:pointer;"><input type="checkbox" class="ps-papel" value="Avaliação"/> <span style="color:#534ab7;font-weight:600;">Avaliação</span></label>
+        <label style="font-size:11px;display:flex;align-items:center;gap:6px;cursor:pointer;"><input type="checkbox" class="ps-papel" value="Consultado"/> <span style="color:#5f5e5a;font-weight:600;">Consultado</span></label>
+        <label style="font-size:11px;display:flex;align-items:center;gap:6px;cursor:pointer;"><input type="checkbox" class="ps-papel" value="Informado"/> <span style="color:#a32d2d;font-weight:600;">Informado</span></label>
+      </div>
+      <div style="font-size:10px;color:var(--txt3);margin-top:4px;">Uma pessoa pode ter múltiplos papéis. Ex: um diretor pode ser Aprovação e Avaliação.</div>
+    </div>
+    <div class="fg"><label class="fl">Observações</label><input class="fi" id="ps-obs" placeholder="Ex: Responsável pelas compras industriais..."/></div>
+    <div class="fg">
+      <label class="fl">Vínculo com reuniões</label>
+      <select class="fs" id="ps-reuniao">
+        <option value="">Sem vínculo direto (apenas responsável por ações)</option>
+        <option value="17/04/2026">17/04/2026 — Diretoria 1T2026</option>
+        <option value="2T2026">A definir — Diretoria 2T2026</option>
+      </select>
+    </div>
+    <div class="mact">
+      <button class="btn" onclick="closeM('m-pessoa')">Cancelar</button>
+      <button class="btn btn-p" onclick="salvarPessoa()">Salvar</button>
+    </div>
+  </div>
+</div>
+
+<!-- VINCULAR A REUNIÃO -->
+<div class="mbk" id="m-vincular">
+  <div class="modal">
+    <div class="mtitle">Vincular Participante à Reunião</div>
+    <div class="fg"><label class="fl">Pessoa</label><select class="fs" id="vinc-pessoa"><option>— selecione —</option></select></div>
+    <div class="fg"><label class="fl">Reunião</label>
+      <select class="fs"><option>17/04/2026 — Diretoria 1T2026</option><option>A definir — 2T2026</option></select>
+    </div>
+    <div class="fg">
+      <label class="fl">Papel nesta reunião</label>
+      <select class="fs" id="vinc-papel">
+        <option value="Aprovação">Aprovação — delibera e aprova decisões</option>
+        <option value="Comunicação">Comunicação — responsável pela convocação e ata</option>
+        <option value="Execução">Execução — responsável por realizar ações</option>
+        <option value="Avaliação">Avaliação — analisa e emite pareceres</option>
+        <option value="Consultado">Consultado — consultado antes de decisões</option>
+        <option value="Informado">Informado — recebe comunicados das decisões</option>
+        <option value="Convidado">Convidado — participação pontual</option>
+      </select>
+    </div>
+    <div class="mact">
+      <button class="btn" onclick="closeM('m-vincular')">Cancelar</button>
+      <button class="btn btn-p" onclick="vincularPessoa()">Vincular</button>
+    </div>
+  </div>
+</div>
+
+<!-- EDITAR AÇÃO -->
+<div class="mbk" id="m-edit-acao">
+  <div class="modal">
+    <div class="mtitle">Editar Ação</div>
+    <input type="hidden" id="edit-id"/>
+    <div class="fg">
+      <label class="fl">Descrição da Ação</label>
+      <input class="fi" id="edit-desc-input" placeholder="Descrição da ação..."/>
+    </div>
+    <div class="fg-row">
+      <div class="fg"><label class="fl">Data de Início</label><input class="fi" type="date" id="edit-inicio"/></div>
+      <div class="fg"><label class="fl">Prazo</label><input class="fi" type="date" id="edit-prazo"/></div>
+    </div>
+    <div class="fg">
+      <label class="fl">Data de Finalização</label>
+      <input class="fi" type="date" id="edit-fin"/>
+      <div style="font-size:10px;color:var(--txt3);margin-top:3px;">Ao preencher esta data, o resultado abaixo torna-se obrigatório.</div>
+    </div>
+    <div class="fg">
+      <label class="fl">Resultado / Anotações <span id="edit-anotacao-req" style="color:var(--err);display:none;">*obrigatório</span></label>
+      <textarea class="fta" id="edit-anotacao" rows="4" placeholder="Descreva o resultado obtido com a realização desta ação..." oninput="this.style.borderColor=''"></textarea>
+    </div>
+    <div class="mact">
+      <button class="btn" onclick="closeM('m-edit-acao')">Cancelar</button>
+      <button class="btn btn-p" onclick="salvarEdit()">Salvar</button>
+    </div>
+  </div>
+</div>
+
+
+<!-- LOADING OVERLAY -->
+<div id="loading-overlay" style="display:flex;position:fixed;inset:0;background:rgba(26,26,24,0.7);z-index:9999;align-items:center;justify-content:center;flex-direction:column;gap:14px;">
+  <div style="width:40px;height:40px;border:3px solid rgba(255,255,255,.2);border-top-color:#fff;border-radius:50%;animation:spin .8s linear infinite;"></div>
+  <div id="loading-msg" style="color:#fff;font-size:13px;font-family:-apple-system,sans-serif;">Carregando...</div>
+</div>
+
+<!-- DB ERROR OVERLAY -->
+<div id="db-error" style="display:none;position:fixed;inset:0;background:rgba(26,26,24,0.85);z-index:9999;align-items:center;justify-content:center;">
+  <div style="background:#fff;border-radius:12px;padding:28px 32px;max-width:420px;text-align:center;font-family:-apple-system,sans-serif;">
+    <div style="font-size:28px;margin-bottom:10px;">⚠️</div>
+    <div style="font-size:15px;font-weight:700;margin-bottom:8px;">Erro de conexão</div>
+    <div id="db-error-msg" style="font-size:12px;color:#5f5e5a;margin-bottom:18px;line-height:1.6;"></div>
+    <div style="font-size:11px;color:#9c9b97;margin-bottom:16px;">Verifique se a chave Supabase está correta no arquivo HTML (linha com SUPABASE_KEY).</div>
+    <button onclick="location.reload()" style="padding:8px 20px;background:#1a1a18;color:#fff;border:none;border-radius:8px;cursor:pointer;font-size:13px;">Tentar novamente</button>
+  </div>
+</div>
+
+<style>
+@keyframes spin { to { transform: rotate(360deg); } }
+</style>
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script>
+// ═══════════════════════════════════════════════════════
+// ECOMET GOVERNANÇA CORPORATIVA — v6 com Supabase
+// ═══════════════════════════════════════════════════════
+const SUPABASE_URL = 'https://bagaxfslsirrqnllslye.supabase.co';
+const SUPABASE_KEY = 'sb_publishable_BgySyIm3bhm7QAhO6JEI_w_1MwUPjpg';
+const sb = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+
+const today = new Date().toISOString().split('T')[0];
+
+// Estado em memória
+let acoes = [], pessoas = [], decisoes = [], regras = [];
+let filtStat = '', filtArea = '';
+
+// ── UI helpers ──
+function showLoading(msg) {
+  document.getElementById('loading-overlay').style.display = 'flex';
+  document.getElementById('loading-msg').textContent = msg || 'Carregando...';
+}
+function hideLoading() { document.getElementById('loading-overlay').style.display = 'none'; }
+
+function notify(msg, id) {
+  const b = document.getElementById(id || 'n0');
+  if (!b) return;
+  b.style.background = 'var(--ok-bg)'; b.style.color = 'var(--ok)'; b.style.borderColor = '';
+  b.textContent = '✓ ' + msg;
+  b.style.display = 'block';
+  setTimeout(() => b.style.display = 'none', 4500);
+}
+function notifyErr(msg, id) {
+  const b = document.getElementById(id || 'n0');
+  if (!b) return;
+  b.style.background = 'var(--err-bg)'; b.style.color = 'var(--err)';
+  b.textContent = '✗ ' + msg;
+  b.style.display = 'block';
+  setTimeout(() => { b.style.display = 'none'; b.style.background = ''; b.style.color = ''; }, 5500);
+}
+
+// ── Navigation ──
+function nav(page) {
+  document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+  document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
+  document.getElementById('page-' + page).classList.add('active');
+  document.getElementById('nav-' + page).classList.add('active');
+}
+
+// ── Modals ──
+function openM(id) { document.getElementById(id).classList.add('open'); }
+function closeM(id) { document.getElementById(id).classList.remove('open'); }
+document.querySelectorAll('.mbk').forEach(m => {
+  m.addEventListener('click', e => { if (e.target === m) m.classList.remove('open'); });
+});
+
+// ── Utils ──
+function initials(n) {
+  return n.split(/[\s\/]+/).filter(w => w.length > 2).slice(0, 2).map(w => w[0]).join('').toUpperCase().substring(0, 2);
+}
+function avClass(r) {
+  if (r.includes('Abud') || r.includes('Ricardo')) return 'av-p';
+  if (r.includes('Vinicius') || r.includes('Luciano') || r.includes('Paulo')) return 'av-g';
+  if (r.includes('Rafael') || r.includes('Vera')) return 'av-y';
+  if (r.includes('Simone')) return 'av-b';
+  return 'av-x';
+}
+function fmtDate(d) {
+  if (!d) return '—';
+  const p = d.split('-');
+  return p[2] + '/' + p[1] + '/' + p[0];
+}
+
+// ═══════════════════════════════════════════════════════
+// SUPABASE — LOAD
+// ═══════════════════════════════════════════════════════
+async function loadAll() {
+  showLoading('Conectando ao banco de dados...');
+  try {
+    const [ra, rp, rd, rreg] = await Promise.all([
+      sb.from('acoes').select('*').order('prazo'),
+      sb.from('pessoas').select('*').order('nome'),
+      sb.from('decisoes').select('*').order('num'),
+      sb.from('regras_notificacao').select('*').order('created_at'),
+    ]);
+    if (ra.error) throw ra.error;
+    if (rp.error) throw rp.error;
+    if (rd.error) throw rd.error;
+    if (rreg.error) throw rreg.error;
+
+    acoes = (ra.data || []).map(r => ({
+      id: r.id, desc: r.descricao, area: r.area, resp: r.resp,
+      prazo: r.prazo || '', inicio: r.inicio || '', fin: r.fin || '', anotacao: r.anotacao || ''
+    }));
+    pessoas = (rp.data || []).map(r => ({
+      id: r.id, nome: r.nome, cargo: r.cargo || '', email: r.email || '',
+      tel: r.tel || '', area: r.area || '', perfil: r.perfil || '',
+      papeis: r.papeis || [], reuniao: r.reuniao || null, obs: r.obs || ''
+    }));
+    decisoes = (rd.data || []).map(r => ({ id: r.id, num: r.num, titulo: r.titulo, texto: r.texto }));
+    regras = (rreg.data || []).map(r => ({
+      id: r.id, gatilho: r.gatilho, desc: r.descricao || r.gatilho,
+      timing: r.timing, dest: r.dest, email: r.canal_email, wa: r.canal_wa, ativo: r.ativo
+    }));
+
+    hideLoading();
+    renderAll();
+  } catch (e) {
+    hideLoading();
+    console.error(e);
+    document.getElementById('db-error').style.display = 'flex';
+    document.getElementById('db-error-msg').textContent = e.message || 'Erro de conexão.';
+  }
+}
+
+function renderAll() {
+  updateMetrics();
+  renderProximas();
+  renderTabela();
+  renderDecisoesLista();
+  renderPessoas();
+  renderVinculados();
+  renderComunicacao();
+  renderRespProg();
+  renderGantt();
+  renderRegras();
+  initChart();
+}
+
+// ── DB save helpers ──
+async function dbUpsertAcao(a) {
+  const payload = {
+    descricao: a.desc, area: a.area, resp: a.resp,
+    prazo: a.prazo || null, inicio: a.inicio || null,
+    fin: a.fin || null, anotacao: a.anotacao || null,
+    updated_at: new Date().toISOString(),
+    reuniao_id: '00000000-0000-0000-0000-000000000001'
+  };
+  if (typeof a.id === 'string' && a.id.length > 10) {
+    const { error } = await sb.from('acoes').update(payload).eq('id', a.id);
+    if (error) throw error;
+  } else {
+    const { data, error } = await sb.from('acoes').insert(payload).select().single();
+    if (error) throw error;
+    a.id = data.id;
+  }
+}
+
+async function dbUpsertPessoa(p) {
+  const payload = {
+    nome: p.nome, cargo: p.cargo, email: p.email, tel: p.tel,
+    area: p.area, perfil: p.perfil, papeis: p.papeis,
+    reuniao: p.reuniao || null, obs: p.obs
+  };
+  if (typeof p.id === 'string' && p.id.length > 10) {
+    const { error } = await sb.from('pessoas').update(payload).eq('id', p.id);
+    if (error) throw error;
+  } else {
+    const { data, error } = await sb.from('pessoas').insert(payload).select().single();
+    if (error) throw error;
+    p.id = data.id;
+  }
+}
+
+async function dbDeletePessoa(id) {
+  const { error } = await sb.from('pessoas').delete().eq('id', id);
+  if (error) throw error;
+}
+
+async function dbUpsertRegra(r) {
+  const payload = {
+    gatilho: r.gatilho, descricao: r.desc, timing: r.timing,
+    dest: r.dest, canal_email: r.email, canal_wa: r.wa, ativo: r.ativo
+  };
+  if (typeof r.id === 'string' && r.id.length > 10) {
+    const { error } = await sb.from('regras_notificacao').update(payload).eq('id', r.id);
+    if (error) throw error;
+  } else {
+    const { data, error } = await sb.from('regras_notificacao').insert(payload).select().single();
+    if (error) throw error;
+    r.id = data.id;
+  }
+}
+
+async function dbDeleteRegra(id) {
+  const { error } = await sb.from('regras_notificacao').delete().eq('id', id);
+  if (error) throw error;
+}
+
+// ═══════════════════════════════
+// STATUS
+// ═══════════════════════════════
+function calcStatus(a) {
+  if (a.fin) return 'Concluída';
+  if (a.inicio) return (a.prazo && a.prazo < today) ? 'Atrasada' : 'Em andamento';
+  if (a.prazo && a.prazo < today) return 'Atrasada';
+  return 'Pendente';
+}
+
+function statusBadge(s) {
+  const map = {
+    'Pendente': '<span class="badge s-pend">Pendente</span>',
+    'Em andamento': '<span class="badge s-and">Em andamento</span>',
+    'Concluída': '<span class="badge s-ok">Concluída</span>',
+    'Atrasada': '<span class="badge s-att">Atrasada</span>',
+  };
+  return map[s] || '<span class="badge bg-gray">' + s + '</span>';
+}
+
+// ═══════════════════════════════
+// METRICS
+// ═══════════════════════════════
+function updateMetrics() {
+  const total = acoes.length;
+  const pend  = acoes.filter(a => calcStatus(a) === 'Pendente').length;
+  const and   = acoes.filter(a => calcStatus(a) === 'Em andamento').length;
+  const ok    = acoes.filter(a => calcStatus(a) === 'Concluída').length;
+  const att   = acoes.filter(a => calcStatus(a) === 'Atrasada').length;
+  document.getElementById('m-total').textContent = total;
+  document.getElementById('m-pend').textContent  = pend;
+  document.getElementById('m-and').textContent   = and;
+  document.getElementById('m-ok').textContent    = ok;
+  document.getElementById('m-ok-pct').textContent = (total ? Math.round(ok / total * 100) : 0) + '% realizadas';
+  document.getElementById('m-att').textContent   = att;
+}
+
+// ═══════════════════════════════
+// PROXIMAS AÇÕES
+// ═══════════════════════════════
+function renderProximas() {
+  const lista = acoes.filter(a => calcStatus(a) !== 'Concluída')
+    .sort((a, b) => a.prazo > b.prazo ? 1 : -1).slice(0, 5);
+  document.getElementById('prox-acoes').innerHTML = lista.map(a => `
+    <tr>
+      <td style="padding-left:0;max-width:280px;">${a.desc}</td>
+      <td><span class="tag">${a.area.split(' ')[0]}</span></td>
+      <td style="color:var(--txt2);font-size:11px;">${a.resp}</td>
+      <td style="white-space:nowrap;font-size:11px;">${fmtDate(a.prazo)}</td>
+      <td>${statusBadge(calcStatus(a))}</td>
+    </tr>`).join('');
+}
+
+// ═══════════════════════════════
+// TABELA AÇÕES
+// ═══════════════════════════════
+function filtSt(v)  { filtStat = v; renderTabela(); }
+function filtAr(v)  { filtArea = v; renderTabela(); }
+
+function renderTabela() {
+  let lista = acoes;
+  if (filtStat) lista = lista.filter(a => calcStatus(a) === filtStat);
+  if (filtArea) lista = lista.filter(a => a.area === filtArea);
+  document.getElementById('tb-acoes').innerHTML = lista.map(a => {
+    const st = calcStatus(a);
+    const anotBorder = (!a.anotacao && a.fin) ? 'border-color:#a32d2d;background:#fcebeb;' : '';
+    return `<tr>
+      <td style="padding-left:18px;max-width:230px;font-size:11px;">${a.desc}</td>
+      <td><span class="tag" style="font-size:9px;">${a.area.replace(' e ', '/').split('/')[0]}</span></td>
+      <td><div class="rc"><div class="av ${avClass(a.resp)}">${initials(a.resp)}</div><span style="font-size:10px;">${a.resp}</span></div></td>
+      <td><input type="date" value="${a.inicio || ''}" style="border:0.5px solid var(--border2);border-radius:5px;padding:3px 5px;font-size:10px;font-family:var(--font);background:var(--bg);color:var(--txt);width:110px;" onchange="setInicio('${a.id}',this.value)"/></td>
+      <td style="white-space:nowrap;font-size:11px;">${fmtDate(a.prazo)}</td>
+      <td><input type="date" value="${a.fin || ''}" style="border:0.5px solid var(--border2);border-radius:5px;padding:3px 5px;font-size:10px;font-family:var(--font);background:var(--bg);color:var(--txt);width:110px;" onchange="setFin('${a.id}',this.value)"/></td>
+      <td>${statusBadge(st)}</td>
+      <td><input type="text" value="${a.anotacao || ''}" placeholder="${a.fin ? '⚠ Resultado obrigatório' : 'Anotações...'}" style="border:0.5px solid var(--border2);${anotBorder}border-radius:5px;padding:3px 6px;font-size:10px;font-family:var(--font);background:var(--bg);color:var(--txt);width:100%;min-width:140px;" onchange="setAnotacao('${a.id}',this.value)"/></td>
+      <td style="padding-right:18px;"><button class="btn btn-sm" onclick="openEdit('${a.id}')">✎</button></td>
+    </tr>`;
+  }).join('');
+}
+
+async function setInicio(id, val) {
+  const a = acoes.find(x => x.id === id);
+  if (!a) return;
+  a.inicio = val;
+  renderTabela(); updateMetrics(); renderProximas();
+  try { await dbUpsertAcao(a); }
+  catch (e) { notifyErr('Erro ao salvar: ' + e.message, 'n-acoes'); }
+}
+
+async function setFin(id, val) {
+  const a = acoes.find(x => x.id === id);
+  if (!a) return;
+  if (val && !a.anotacao) {
+    a.fin = val;
+    renderTabela(); updateMetrics(); renderProximas();
+    openEdit(id, true);
+    notify('⚠ Preencha o resultado da ação para concluí-la.', 'n-acoes');
+    return;
+  }
+  a.fin = val;
+  renderTabela(); updateMetrics(); renderProximas();
+  try { await dbUpsertAcao(a); if (val) notify('Ação concluída e salva.', 'n-acoes'); }
+  catch (e) { notifyErr('Erro ao salvar: ' + e.message, 'n-acoes'); }
+}
+
+async function setAnotacao(id, val) {
+  const a = acoes.find(x => x.id === id);
+  if (!a) return;
+  a.anotacao = val;
+  renderTabela(); updateMetrics();
+  try { await dbUpsertAcao(a); }
+  catch (e) { notifyErr('Erro ao salvar anotação.', 'n-acoes'); }
+}
+
+function openEdit(id, focusAnotacao) {
+  const a = acoes.find(x => x.id === id);
+  if (!a) return;
+  document.getElementById('edit-id').value = id;
+  document.getElementById('edit-desc-input').value = a.desc;
+  document.getElementById('edit-inicio').value = a.inicio || '';
+  document.getElementById('edit-prazo').value = a.prazo || '';
+  document.getElementById('edit-fin').value = a.fin || '';
+  const aEl = document.getElementById('edit-anotacao');
+  aEl.value = a.anotacao || '';
+  aEl.style.borderColor = (a.fin && !a.anotacao) ? '#a32d2d' : '';
+  openM('m-edit-acao');
+  if (focusAnotacao) setTimeout(() => aEl.focus(), 200);
+}
+
+async function salvarEdit() {
+  const id = document.getElementById('edit-id').value;
+  const a = acoes.find(x => x.id === id);
+  if (!a) return;
+  const newFin = document.getElementById('edit-fin').value;
+  const newAnotacao = document.getElementById('edit-anotacao').value.trim();
+  if (newFin && !newAnotacao) {
+    document.getElementById('edit-anotacao').style.borderColor = '#a32d2d';
+    document.getElementById('edit-anotacao').focus();
+    alert('O resultado da ação é obrigatório para registrar a data de finalização.');
+    return;
+  }
+  a.desc    = document.getElementById('edit-desc-input').value.trim() || a.desc;
+  a.inicio  = document.getElementById('edit-inicio').value;
+  a.prazo   = document.getElementById('edit-prazo').value;
+  a.fin     = newFin;
+  a.anotacao = newAnotacao;
+  closeM('m-edit-acao');
+  showLoading('Salvando ação...');
+  try {
+    await dbUpsertAcao(a);
+    hideLoading();
+    renderTabela(); updateMetrics(); renderProximas();
+    notify('Ação atualizada com sucesso.', 'n-acoes');
+  } catch (e) {
+    hideLoading();
+    notifyErr('Erro ao salvar: ' + e.message, 'n-acoes');
+  }
+}
+
+async function addAcao() {
+  const desc = document.getElementById('na-desc').value.trim();
+  if (!desc) { alert('Informe a descrição da ação.'); return; }
+  const nova = {
+    id: '__new__',
+    desc,
+    area:   document.getElementById('na-area').value,
+    resp:   document.getElementById('na-resp').value,
+    prazo:  document.getElementById('na-prazo').value || '',
+    inicio: document.getElementById('na-inicio').value || '',
+    fin: '', anotacao: ''
+  };
+  closeM('m-acao');
+  showLoading('Criando ação...');
+  try {
+    await dbUpsertAcao(nova);
+    acoes.push(nova);
+    hideLoading();
+    updateMetrics(); renderProximas(); renderTabela();
+    notify('Ação criada e salva no banco.');
+    document.getElementById('na-desc').value = '';
+  } catch (e) {
+    hideLoading();
+    notifyErr('Erro ao criar ação: ' + e.message);
+  }
+}
+
+// ═══════════════════════════════
+// DECISÕES
+// ═══════════════════════════════
+function renderDecisoesLista() {
+  document.getElementById('lista-dec').innerHTML = decisoes.map(d => `
+    <div style="padding:12px 0;border-bottom:0.5px solid var(--border);">
+      <div style="display:flex;align-items:flex-start;gap:10px;">
+        <span class="badge bg-info" style="flex-shrink:0;margin-top:1px;">${d.num}</span>
+        <div>
+          <div style="font-size:12px;font-weight:700;margin-bottom:4px;">${d.titulo}</div>
+          <div style="font-size:11px;color:var(--txt2);line-height:1.7;">${d.texto}</div>
+        </div>
+      </div>
+    </div>`).join('') + '<div style="height:4px;"></div>';
+}
+
+// ═══════════════════════════════
+// PESSOAS
+// ═══════════════════════════════
+const papelColors = {
+  'Aprovação':   { bg:'#faeeda', txt:'#854f0b' },
+  'Comunicação': { bg:'#e6f1fb', txt:'#185fa5' },
+  'Execução':    { bg:'#eaf3de', txt:'#3b6d11' },
+  'Avaliação':   { bg:'#eeedfe', txt:'#534ab7' },
+  'Consultado':  { bg:'#f5f5f3', txt:'#5f5e5a' },
+  'Informado':   { bg:'#fcebeb', txt:'#a32d2d' },
+  'Convidado':   { bg:'#f5f5f3', txt:'#5f5e5a' },
+};
+function papelBadge(p) {
+  const c = papelColors[p] || { bg:'#f5f5f3', txt:'#5f5e5a' };
+  return `<span class="badge" style="background:${c.bg};color:${c.txt};">${p}</span>`;
+}
+
+let filtPapel = '';
+function filtPessoas(v) { filtPapel = v; renderPessoas(); }
+
+function renderPessoas() {
+  const busca = (document.getElementById('busca-pessoa')?.value || '').toLowerCase();
+  let lista = pessoas;
+  if (filtPapel) lista = lista.filter(p => p.papeis && p.papeis.includes(filtPapel));
+  if (busca)    lista = lista.filter(p => p.nome.toLowerCase().includes(busca) || (p.cargo||'').toLowerCase().includes(busca));
+
+  document.getElementById('badge-pessoas-ct').textContent = pessoas.length;
+
+  // update resp selects
+  const selResp = document.getElementById('na-resp');
+  if (selResp) {
+    selResp.innerHTML = pessoas.map(p => `<option>${p.nome}</option>`).join('') +
+      '<option>Luciano / Vinicius Cardoso</option><option>Vera / Rafael Bernardes</option><option>Paulo / Vinicius Cardoso</option>';
+  }
+  const selVinc = document.getElementById('vinc-pessoa');
+  if (selVinc) selVinc.innerHTML = '<option value="">— selecione —</option>' + pessoas.map(p => `<option value="${p.id}">${p.nome}</option>`).join('');
+
+  if (!lista.length) {
+    document.getElementById('lista-pessoas').innerHTML = '<div style="font-size:12px;color:var(--txt2);padding:12px 0;">Nenhuma pessoa encontrada.</div>';
+    return;
+  }
+  document.getElementById('lista-pessoas').innerHTML = lista.map(p => {
+    const papeis = (p.papeis || []).map(pp => papelBadge(pp)).join(' ');
+    const reunBadge = p.reuniao
+      ? `<span class="badge bg-info" style="font-size:9px;">${p.reuniao}</span>`
+      : `<span class="badge bg-gray" style="font-size:9px;">Sem reunião vinculada</span>`;
+    return `
+    <div class="ccard" style="flex-wrap:wrap;gap:6px;">
+      <div class="ccard-l" style="flex:1;min-width:200px;">
+        <div class="av ${avClass(p.nome)}" style="width:32px;height:32px;font-size:10px;flex-shrink:0;">${initials(p.nome)}</div>
+        <div>
+          <div style="font-size:12px;font-weight:700;">${p.nome}</div>
+          <div class="ccard-info">${p.cargo} · ${p.area}</div>
+          <div style="font-size:10px;color:var(--txt3);margin-top:2px;">${p.email ? '✉ '+p.email : ''}${p.tel ? '  📱 '+p.tel : ''}</div>
+          ${p.obs ? `<div style="font-size:10px;color:var(--txt2);margin-top:2px;font-style:italic;">${p.obs}</div>` : ''}
+          <div style="margin-top:6px;display:flex;flex-wrap:wrap;gap:4px;">${papeis}</div>
+          <div style="margin-top:4px;">${reunBadge}</div>
+        </div>
+      </div>
+      <div style="display:flex;flex-direction:column;align-items:flex-end;gap:5px;flex-shrink:0;">
+        <span class="badge bg-info">${p.perfil}</span>
+        <div style="display:flex;gap:5px;">
+          <button class="btn btn-sm" onclick="editarPessoa('${p.id}')">✎ Editar</button>
+          <button class="btn btn-sm btn-err" onclick="removerPessoa('${p.id}')">× Remover</button>
+        </div>
+      </div>
+    </div>`;
+  }).join('');
+}
+
+function abrirCadastroPessoa() {
+  document.getElementById('ps-id').value = '';
+  document.getElementById('m-pessoa-title').textContent = 'Cadastrar Pessoa';
+  ['ps-nome','ps-cargo','ps-email','ps-tel','ps-obs'].forEach(id => { document.getElementById(id).value = ''; });
+  document.getElementById('ps-area').selectedIndex = 0;
+  document.getElementById('ps-perfil').selectedIndex = 0;
+  document.getElementById('ps-reuniao').selectedIndex = 0;
+  document.querySelectorAll('.ps-papel').forEach(cb => cb.checked = false);
+  openM('m-pessoa');
+}
+
+function editarPessoa(id) {
+  const p = pessoas.find(x => x.id === id);
+  if (!p) return;
+  document.getElementById('ps-id').value = id;
+  document.getElementById('m-pessoa-title').textContent = 'Editar Pessoa';
+  document.getElementById('ps-nome').value  = p.nome;
+  document.getElementById('ps-cargo').value = p.cargo;
+  document.getElementById('ps-email').value = p.email;
+  document.getElementById('ps-tel').value   = p.tel || '';
+  document.getElementById('ps-obs').value   = p.obs || '';
+  const setOpt = (elId, val) => { const el = document.getElementById(elId); for (let o of el.options) { if (o.value === val) { o.selected = true; break; } } };
+  setOpt('ps-area', p.area);
+  setOpt('ps-perfil', p.perfil);
+  setOpt('ps-reuniao', p.reuniao || '');
+  document.querySelectorAll('.ps-papel').forEach(cb => { cb.checked = (p.papeis || []).includes(cb.value); });
+  openM('m-pessoa');
+}
+
+async function salvarPessoa() {
+  const nome  = document.getElementById('ps-nome').value.trim();
+  const email = document.getElementById('ps-email').value.trim();
+  if (!nome || !email) { alert('Nome e e-mail são obrigatórios.'); return; }
+  const papeis = Array.from(document.querySelectorAll('.ps-papel:checked')).map(cb => cb.value);
+  const editId = document.getElementById('ps-id').value;
+  const dados = {
+    id: editId || '__new__',
+    nome, cargo: document.getElementById('ps-cargo').value,
+    email, tel: document.getElementById('ps-tel').value,
+    area: document.getElementById('ps-area').value,
+    perfil: document.getElementById('ps-perfil').value,
+    obs: document.getElementById('ps-obs').value,
+    papeis, reuniao: document.getElementById('ps-reuniao').value || null,
+  };
+  closeM('m-pessoa');
+  showLoading('Salvando pessoa...');
+  try {
+    await dbUpsertPessoa(dados);
+    if (editId) {
+      const idx = pessoas.findIndex(p => p.id === editId);
+      if (idx > -1) pessoas[idx] = dados;
+    } else {
+      pessoas.push(dados);
+    }
+    hideLoading();
+    renderPessoas(); renderVinculados(); renderComunicacao();
+    notify('Cadastro salvo: ' + nome, 'n-pessoas');
+  } catch (e) {
+    hideLoading();
+    notifyErr('Erro ao salvar: ' + e.message, 'n-pessoas');
+  }
+}
+
+async function removerPessoa(id) {
+  const p = pessoas.find(x => x.id === id);
+  if (!confirm('Remover ' + (p?.nome || 'esta pessoa') + ' do cadastro?')) return;
+  showLoading('Removendo...');
+  try {
+    await dbDeletePessoa(id);
+    const i = pessoas.findIndex(x => x.id === id);
+    if (i > -1) pessoas.splice(i, 1);
+    hideLoading();
+    renderPessoas(); renderVinculados(); renderComunicacao();
+  } catch (e) {
+    hideLoading();
+    notifyErr('Erro ao remover: ' + e.message, 'n-pessoas');
+  }
+}
+
+function renderVinculados() {
+  const vinc = pessoas.filter(p => p.reuniao);
+  if (!vinc.length) {
+    document.getElementById('lista-vinculados').innerHTML = '<div style="font-size:12px;color:var(--txt2);padding:12px 0;">Nenhum participante vinculado ainda.</div>';
+    return;
+  }
+  document.getElementById('lista-vinculados').innerHTML = vinc.map(p => {
+    const papeis = (p.papeis || []).map(pp => papelBadge(pp)).join(' ');
+    return `<div class="ccard" style="flex-wrap:wrap;">
+      <div class="ccard-l" style="flex:1;">
+        <div class="av ${avClass(p.nome)}">${initials(p.nome)}</div>
+        <div>
+          <div style="font-size:12px;font-weight:700;">${p.nome}</div>
+          <div class="ccard-info">${p.cargo} · ${p.reuniao}</div>
+          <div style="margin-top:4px;display:flex;gap:4px;flex-wrap:wrap;">${papeis}</div>
+        </div>
+      </div>
+      <button class="btn btn-sm" onclick="editarPessoa('${p.id}')">✎ Editar</button>
+    </div>`;
+  }).join('');
+}
+
+async function vincularPessoa() {
+  const sel = document.getElementById('vinc-pessoa');
+  const pid = sel.value;
+  const p = pessoas.find(x => x.id === pid);
+  if (!p) { alert('Selecione uma pessoa.'); return; }
+  const papel = document.getElementById('vinc-papel').value;
+  if (!p.papeis) p.papeis = [];
+  if (!p.papeis.includes(papel)) p.papeis.push(papel);
+  p.reuniao = '17/04/2026';
+  closeM('m-vincular');
+  showLoading('Salvando vínculo...');
+  try {
+    await dbUpsertPessoa(p);
+    hideLoading();
+    renderPessoas(); renderVinculados();
+    notify('Participante vinculado com papel: ' + papel, 'n-pessoas');
+  } catch (e) {
+    hideLoading();
+    notifyErr('Erro ao vincular: ' + e.message, 'n-pessoas');
+  }
+}
+
+// ═══════════════════════════════
+// COMUNICAÇÃO — dinâmica
+// ═══════════════════════════════
+function renderComunicacao() {
+  const emSel = document.getElementById('em-dest');
+  const waSel = document.getElementById('wa-dest');
+  if (!emSel || !waSel) return;
+  const prevEm = emSel.value, prevWa = waSel.value;
+  emSel.innerHTML = '<option value="__todos__">Todos os cadastrados</option>' +
+    pessoas.map(p => `<option value="${p.id}" data-email="${p.email}" data-nome="${p.nome}">${p.nome}${p.email ? ' — '+p.email : ''}</option>`).join('');
+  waSel.innerHTML = '<option value="__todos__">Todos os cadastrados</option>' +
+    pessoas.filter(p => p.tel).map(p => {
+      const num = p.tel.replace(/\D/g, '');
+      return `<option value="${num}" data-tel="${p.tel}" data-nome="${p.nome}">${p.nome} — ${p.tel}</option>`;
+    }).join('') +
+    pessoas.filter(p => !p.tel).map(p => `<option value="" disabled>${p.nome} — sem telefone</option>`).join('');
+  for (let o of emSel.options) { if (o.value === prevEm) { o.selected = true; break; } }
+  for (let o of waSel.options) { if (o.value === prevWa) { o.selected = true; break; } }
+  atualizarPreviewEmail();
+  atualizarPreviewWA();
+}
+
+function atualizarPreviewEmail() {
+  const sel = document.getElementById('em-dest');
+  const info = document.getElementById('em-dest-info');
+  if (!sel || !info) return;
+  if (sel.value === '__todos__') {
+    info.textContent = 'Destinatários: ' + pessoas.filter(p => p.email).map(p => p.email).join(', ');
+  } else {
+    const opt = sel.options[sel.selectedIndex];
+    info.textContent = opt?.dataset.email ? 'E-mail: ' + opt.dataset.email : 'E-mail não cadastrado.';
+  }
+}
+
+function atualizarPreviewWA() {
+  const sel = document.getElementById('wa-dest');
+  const info = document.getElementById('wa-dest-info');
+  if (!sel || !info) return;
+  if (sel.value === '__todos__') {
+    info.textContent = 'WhatsApp: ' + pessoas.filter(p => p.tel).map(p => p.nome + ' (' + p.tel + ')').join(', ');
+  } else {
+    const opt = sel.options[sel.selectedIndex];
+    info.textContent = opt?.dataset.tel ? 'WhatsApp: ' + opt.dataset.tel : '';
+  }
+}
+
+function fmtTelWA(tel) {
+  let n = tel.replace(/\D/g, '');
+  if (!n.startsWith('55')) n = '55' + n;
+  return n;
+}
+
+function envEmail() {
+  const sel = document.getElementById('em-dest');
+  if (sel.value === '__todos__') {
+    notify('E-mail enviado para todos os cadastrados: ' + pessoas.filter(p => p.email).map(p => p.nome).join(', '));
+  } else {
+    const opt = sel.options[sel.selectedIndex];
+    if (!opt?.dataset.email) { alert('Este usuário não possui e-mail cadastrado.'); return; }
+    notify('E-mail enviado para: ' + opt.dataset.nome + ' (' + opt.dataset.email + ')');
+  }
+}
+
+function envWA() {
+  const sel = document.getElementById('wa-dest');
+  const msg = document.getElementById('wa-msg').value;
+  if (sel.value === '__todos__') {
+    const comTel = pessoas.filter(p => p.tel);
+    if (!comTel.length) { alert('Nenhum usuário com telefone cadastrado.'); return; }
+    comTel.forEach((p, i) => setTimeout(() => window.open('https://wa.me/' + fmtTelWA(p.tel) + '?text=' + encodeURIComponent(msg), '_blank'), i * 700));
+    notify('Abrindo WhatsApp para ' + comTel.length + ' destinatários...');
+  } else {
+    if (!sel.value) { alert('Este usuário não possui telefone cadastrado.'); return; }
+    window.open('https://wa.me/' + fmtTelWA(sel.value) + '?text=' + encodeURIComponent(msg), '_blank');
+  }
+}
+
+// ═══════════════════════════════
+// REGRAS DE NOTIFICAÇÃO
+// ═══════════════════════════════
+const timingColors = {
+  'Imediato':      { bg:'#e6f1fb', txt:'#185fa5' },
+  '1 dia antes':   { bg:'#eeedfe', txt:'#534ab7' },
+  '3 dias antes':  { bg:'#faeeda', txt:'#854f0b' },
+  '7 dias antes':  { bg:'#f5f5f3', txt:'#5f5e5a' },
+  '15 dias antes': { bg:'#f5f5f3', txt:'#5f5e5a' },
+  'No vencimento': { bg:'#fcebeb', txt:'#a32d2d' },
+  '1 dia após vencimento': { bg:'#fcebeb', txt:'#a32d2d' },
+};
+function canalBadge(r) {
+  if (r.email && r.wa) return '<span class="badge bg-ok">E-mail + WhatsApp</span>';
+  if (r.email) return '<span class="badge bg-info">E-mail</span>';
+  if (r.wa)    return '<span class="badge" style="background:#eaf3de;color:#3b6d11;">WhatsApp</span>';
+  return '<span class="badge bg-gray">Nenhum</span>';
+}
+
+function renderRegras() {
+  const ativas = regras.filter(r => r.ativo).length;
+  document.getElementById('badge-regras').textContent = ativas + ' ativas';
+  document.getElementById('lista-regras').innerHTML = regras.map(r => {
+    const tc = timingColors[r.timing] || { bg:'#f5f5f3', txt:'#5f5e5a' };
+    return `<div class="notif-rule" style="${!r.ativo ? 'opacity:.45;' : ''}">
+      <span class="badge" style="background:${tc.bg};color:${tc.txt};width:100px;justify-content:center;flex-shrink:0;">${r.timing}</span>
+      <div style="flex:1;"><strong style="font-size:11px;">${r.gatilho}</strong><br>
+        <span style="font-size:10px;color:var(--txt2);">${r.desc} · <em>${r.dest}</em></span></div>
+      <div style="display:flex;align-items:center;gap:6px;flex-shrink:0;">
+        ${canalBadge(r)}
+        <button class="btn btn-sm" onclick="editarRegra('${r.id}')">✎</button>
+        <button class="btn btn-sm ${r.ativo ? '' : 'btn-ok'}" onclick="toggleRegra('${r.id}')">${r.ativo ? 'Desativar' : 'Ativar'}</button>
+        <button class="btn btn-sm btn-err" onclick="removerRegra('${r.id}')">×</button>
+      </div>
+    </div>`;
+  }).join('');
+}
+
+function abrirNovaRegra() {
+  document.getElementById('regra-id').value = '';
+  document.getElementById('m-regra-title').textContent = 'Nova Regra de Notificação';
+  document.getElementById('regra-gatilho').selectedIndex = 0;
+  document.getElementById('regra-desc').value = '';
+  document.getElementById('regra-timing').selectedIndex = 0;
+  document.getElementById('regra-dest').selectedIndex = 0;
+  document.getElementById('regra-email').checked = true;
+  document.getElementById('regra-wa').checked = true;
+  document.getElementById('regra-ativo').value = '1';
+  openM('m-regra');
+}
+
+function editarRegra(id) {
+  const r = regras.find(x => x.id === id);
+  if (!r) return;
+  document.getElementById('regra-id').value = id;
+  document.getElementById('m-regra-title').textContent = 'Editar Regra';
+  document.getElementById('regra-desc').value = r.desc;
+  document.getElementById('regra-email').checked = r.email;
+  document.getElementById('regra-wa').checked = r.wa;
+  document.getElementById('regra-ativo').value = r.ativo ? '1' : '0';
+  const setOpt = (elId, val) => { const el = document.getElementById(elId); for (let o of el.options) { if (o.value === val) { o.selected = true; break; } } };
+  setOpt('regra-gatilho', r.gatilho);
+  setOpt('regra-timing', r.timing);
+  setOpt('regra-dest', r.dest);
+  openM('m-regra');
+}
+
+async function salvarRegra() {
+  const editId = document.getElementById('regra-id').value;
+  const dados = {
+    id: editId || '__new__',
+    gatilho: document.getElementById('regra-gatilho').value,
+    desc: document.getElementById('regra-desc').value || document.getElementById('regra-gatilho').value,
+    timing: document.getElementById('regra-timing').value,
+    dest: document.getElementById('regra-dest').value,
+    email: document.getElementById('regra-email').checked,
+    wa: document.getElementById('regra-wa').checked,
+    ativo: document.getElementById('regra-ativo').value === '1',
+  };
+  if (!dados.email && !dados.wa) { alert('Selecione ao menos um canal.'); return; }
+  closeM('m-regra');
+  showLoading('Salvando regra...');
+  try {
+    await dbUpsertRegra(dados);
+    if (editId) {
+      const idx = regras.findIndex(r => r.id === editId);
+      if (idx > -1) regras[idx] = dados;
+    } else {
+      regras.push(dados);
+    }
+    hideLoading();
+    renderRegras();
+    notify('Regra salva com sucesso.');
+  } catch (e) {
+    hideLoading();
+    notifyErr('Erro ao salvar regra: ' + e.message);
+  }
+}
+
+async function toggleRegra(id) {
+  const r = regras.find(x => x.id === id);
+  if (!r) return;
+  r.ativo = !r.ativo;
+  try { await dbUpsertRegra(r); renderRegras(); }
+  catch (e) { notifyErr('Erro ao atualizar regra.'); r.ativo = !r.ativo; }
+}
+
+async function removerRegra(id) {
+  if (!confirm('Remover esta regra de notificação?')) return;
+  showLoading('Removendo...');
+  try {
+    await dbDeleteRegra(id);
+    const i = regras.findIndex(r => r.id === id);
+    if (i > -1) regras.splice(i, 1);
+    hideLoading(); renderRegras();
+  } catch (e) {
+    hideLoading(); notifyErr('Erro ao remover regra.');
+  }
+}
+
+// ═══════════════════════════════
+// REUNIÃO
+// ═══════════════════════════════
+function criarReuniao() {
+  closeM('m-reuniao');
+  notify('Reunião agendada! Convocações enviadas por e-mail e WhatsApp a todos os participantes.');
+}
+
+// ═══════════════════════════════
+// UPLOAD / PDF
+// ═══════════════════════════════
+function uploadArq(input, tipo) {
+  if (!input.files.length) return;
+  const file = input.files[0];
+  const lista = document.getElementById('lista-' + (tipo === 'pauta' ? 'pautas' : 'atas'));
+  const div = document.createElement('div');
+  div.className = 'fitem';
+  div.innerHTML = `<div class="fitem-name"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>${file.name}</div>
+    <div style="display:flex;gap:6px;"><button class="btn btn-sm" onclick="gerarPDF('${tipo}')">PDF</button><button class="btn btn-sm btn-err" onclick="this.closest('.fitem').remove()">×</button></div>`;
+  lista.appendChild(div);
+  notify('Arquivo carregado: ' + file.name, 'n-atas');
+}
+function uploadModal(input) {
+  if (input.files.length) document.getElementById('up-modal-label').textContent = input.files[0].name;
+}
+function salvarUpload() {
+  const file = document.getElementById('up-modal-file');
+  const tipo = document.getElementById('up-tipo').value;
+  if (!file.files.length) { alert('Selecione um arquivo.'); return; }
+  uploadArq(file, tipo);
+  closeM('m-upload');
+}
+
+function gerarPDF(tipo) {
+  const { jsPDF } = window.jspdf;
+  const doc = new jsPDF({ orientation:'portrait', unit:'mm', format:'a4' });
+  const W = 210, margin = 18, cw = W - margin * 2;
+  let y = 20;
+  doc.setFillColor(26,26,24); doc.rect(0,0,W,28,'F');
+  doc.setTextColor(255,255,255); doc.setFontSize(14); doc.setFont('helvetica','bold');
+  doc.text('ECOMET METAIS SUSTENTÁVEIS', margin, 13);
+  doc.setFontSize(9); doc.setFont('helvetica','normal');
+  doc.text(tipo === 'pauta' ? 'DOCUMENTO PRÉ-REUNIÃO — DIRETORIA' : 'ATA DE REUNIÃO — DIRETORIA EXECUTIVA', margin, 21);
+  doc.text('Emitido em: ' + fmtDate(today), W-margin, 21, {align:'right'});
+  y = 38; doc.setTextColor(26,26,24);
+  doc.setFillColor(245,245,243); doc.rect(margin, y, cw, 26,'F');
+  doc.setFontSize(8); doc.setFont('helvetica','bold'); doc.setTextColor(95,94,90);
+  doc.text('IDENTIFICAÇÃO DA REUNIÃO', margin+4, y+6);
+  doc.setFont('helvetica','normal'); doc.setTextColor(26,26,24); doc.setFontSize(9);
+  doc.text('Data: 17/04/2026  ·  Horário: 9h30–17h30  ·  Local: Sala de Reuniões', margin+4, y+13);
+  doc.text('Convocação: Ricardo Kalil Abud — Diretor de Gestão e Estratégia', margin+4, y+20);
+  y += 32;
+  // Participantes
+  doc.setFontSize(8); doc.setFont('helvetica','bold'); doc.setTextColor(95,94,90);
+  doc.text('PARTICIPANTES', margin, y); y += 5;
+  doc.setFont('helvetica','normal'); doc.setTextColor(26,26,24); doc.setFontSize(9);
+  pessoas.filter(p => p.reuniao).forEach(p => { doc.text('· ' + p.nome + ' — ' + p.cargo, margin, y); y += 5; });
+  y += 4;
+  if (tipo === 'pauta') {
+    doc.setFontSize(8); doc.setFont('helvetica','bold'); doc.setTextColor(95,94,90);
+    doc.text('PAUTAS', margin, y); y += 5;
+    doc.setFont('helvetica','normal'); doc.setTextColor(26,26,24); doc.setFontSize(9);
+    ['9h30–11h — DRE 1T2026','11h–12h30 — Previsto x Realizado: Vendas e Produtos','13h30–15h30 — Projetos Estratégicos','15h30–17h — Calendário 2T2026'].forEach(p => { doc.text('· '+p, margin, y); y+=5; });
+  } else {
+    doc.setFontSize(8); doc.setFont('helvetica','bold'); doc.setTextColor(95,94,90);
+    doc.text('DECISÕES', margin, y); y += 5;
+    decisoes.forEach(d => {
+      if (y > 260) { doc.addPage(); y = 20; }
+      doc.setFont('helvetica','bold'); doc.setTextColor(24,95,165); doc.setFontSize(8);
+      doc.text('['+d.num+'] '+d.titulo, margin, y); y += 4;
+      doc.setFont('helvetica','normal'); doc.setTextColor(26,26,24); doc.setFontSize(8);
+      const lines = doc.splitTextToSize(d.texto, cw);
+      doc.text(lines, margin, y); y += lines.length * 4.5 + 3;
+    });
+    y += 4;
+    if (y > 230) { doc.addPage(); y = 20; }
+    doc.setFontSize(8); doc.setFont('helvetica','bold'); doc.setTextColor(95,94,90);
+    doc.text('AÇÕES — RESUMO', margin, y); y += 6;
+    doc.setFillColor(26,26,24); doc.rect(margin, y-4, cw, 7,'F');
+    doc.setTextColor(255,255,255); doc.setFontSize(7); doc.setFont('helvetica','bold');
+    doc.text('Ação', margin+2, y+0.5); doc.text('Responsável', margin+95, y+0.5); doc.text('Prazo', margin+135, y+0.5); doc.text('Status', margin+158, y+0.5);
+    y += 5;
+    acoes.forEach((a, i) => {
+      if (y > 270) { doc.addPage(); y = 20; }
+      if (i%2===0) { doc.setFillColor(245,245,243); doc.rect(margin, y-3, cw, 6,'F'); }
+      doc.setTextColor(26,26,24); doc.setFont('helvetica','normal'); doc.setFontSize(7);
+      doc.text((a.desc.length > 50 ? a.desc.substring(0,47)+'...' : a.desc), margin+2, y+0.5);
+      doc.text(a.resp.split('/')[0].trim().substring(0,18), margin+95, y+0.5);
+      doc.text(fmtDate(a.prazo), margin+135, y+0.5);
+      doc.text(calcStatus(a), margin+158, y+0.5);
+      y += 6;
+    });
+  }
+  const pages = doc.getNumberOfPages();
+  for (let i=1; i<=pages; i++) {
+    doc.setPage(i); doc.setFillColor(245,245,243); doc.rect(0,285,W,12,'F');
+    doc.setTextColor(95,94,90); doc.setFontSize(7); doc.setFont('helvetica','normal');
+    doc.text('Ecomet Metais Sustentáveis — Governança Corporativa', margin, 291);
+    doc.text('Página '+i+' de '+pages, W-margin, 291, {align:'right'});
+  }
+  doc.save((tipo==='pauta'?'Pauta':'Ata')+'_Reuniao_1T2026.pdf');
+  notify('PDF gerado com sucesso.', 'n-atas');
+}
+
+// ═══════════════════════════════
+// RESP PROGRESS (dashboard)
+// ═══════════════════════════════
+function renderRespProg() {
+  const map = {};
+  acoes.forEach(a => { map[a.resp] = (map[a.resp] || 0) + 1; });
+  const sorted = Object.entries(map).sort((a,b) => b[1]-a[1]).slice(0,5);
+  const max = sorted[0]?.[1] || 1;
+  const colors = ['#185fa5','#3b6d11','#534ab7','#854f0b','#993556'];
+  document.getElementById('resp-prog').innerHTML = sorted.map(([nome, total], i) => `
+    <div style="margin-bottom:12px;">
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:4px;">
+        <div class="rc"><div class="av" style="background:${colors[i]}20;color:${colors[i]};width:22px;height:22px;font-size:8px;">${initials(nome)}</div><span style="font-size:11px;">${nome}</span></div>
+        <span style="font-size:11px;font-weight:600;">${total}</span>
+      </div>
+      <div class="pbar"><div class="pfill" style="width:${Math.round(total/max*100)}%;background:${colors[i]};"></div></div>
+    </div>`).join('');
+}
+
+// ═══════════════════════════════
+// GANTT (dashboard)
+// ═══════════════════════════════
+function renderGantt() {
+  const items = [
+    {label:'Minuta reunião',start:17,end:19,cor:'#3b6d11'},
+    {label:'Regra preço latão',start:17,end:20,cor:'#3b6d11'},
+    {label:'DRE mensal',start:17,end:30,cor:'#534ab7'},
+    {label:'Precificação cobre',start:17,end:30,cor:'#a32d2d'},
+    {label:'Classif. materiais',start:17,end:30,cor:'#185fa5'},
+    {label:'Compras PIS/COFINS',start:17,end:30,cor:'#185fa5'},
+    {label:'Monitor. EBITDA',start:17,end:30,cor:'#854f0b'},
+    {label:'Clientes ICMS',start:30,end:35,cor:'#534ab7'},
+    {label:'Backup máquinas',start:17,end:45,cor:'#185fa5'},
+    {label:'Políticas operac.',start:17,end:45,cor:'#854f0b'},
+  ];
+  const min=17,max=50,range=max-min;
+  document.getElementById('gantt').innerHTML = items.map(g => {
+    const left=((g.start-min)/range*100).toFixed(1);
+    const width=((g.end-g.start)/range*100).toFixed(1);
+    return `<div class="gantt-row"><div class="gl">${g.label}</div><div class="gtrack"><div class="gbar" style="left:${left}%;width:${width}%;background:${g.cor};"></div></div><div class="gdate">${g.end<=30?'Abr '+g.end:'Mai '+(g.end-30)}</div></div>`;
+  }).join('');
+}
+
+// ═══════════════════════════════
+// CHART
+// ═══════════════════════════════
+let chartInstance = null;
+function initChart() {
+  if (chartInstance) chartInstance.destroy();
+  const areas = ['Governança','Operações','Comercial','Compras','Financeiro','Processos','Pessoas'];
+  const counts = areas.map(a => acoes.filter(x => x.area && x.area.startsWith(a.substring(0,5))).length || acoes.filter(x => x.area && x.area.includes(a.substring(0,4))).length);
+  chartInstance = new Chart(document.getElementById('chartAreas'), {
+    type:'bar',
+    data:{ labels:areas, datasets:[{data:counts,backgroundColor:['#534ab7','#185fa5','#3b6d11','#854f0b','#639922','#d85a30','#993556'],borderRadius:4,borderSkipped:false}] },
+    options:{ responsive:true, maintainAspectRatio:false, plugins:{legend:{display:false}},
+      scales:{ x:{grid:{display:false},ticks:{font:{size:9},color:'#5f5e5a'}}, y:{beginAtZero:true,ticks:{stepSize:1,font:{size:9},color:'#5f5e5a'},grid:{color:'rgba(0,0,0,0.04)'}} } }
+  });
+}
+
+// ═══════════════════════════════
+// INIT
+// ═══════════════════════════════
+loadAll();
+</script>
+</body>
+</html>
